@@ -1,0 +1,872 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Convert everyday measurements into standardized chickens.">
+  <meta name="color-scheme" content="dark light">
+  <title>Chicken Calculator — The CHKN Standard</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f5c842'/%3E%3Ctext x='32' y='45' font-size='40' text-anchor='middle'%3E🐔%3C/text%3E%3C/svg%3E">
+  <style>
+    :root {
+      --bg: #080b0f;
+      --surface: #10151c;
+      --surface-2: #171e27;
+      --surface-3: #202936;
+      --text: #f7f4ea;
+      --muted: #9ba7b7;
+      --line: #2b3645;
+      --accent: #f5c842;
+      --accent-2: #f08a37;
+      --accent-ink: #17130a;
+      --good: #6bd8a7;
+      --danger: #ff7676;
+      --shadow: 0 24px 70px rgba(0, 0, 0, .35);
+      --radius: 22px;
+    }
+
+    html[data-theme="light"] {
+      --bg: #eef1f4;
+      --surface: #ffffff;
+      --surface-2: #f5f7f9;
+      --surface-3: #e8edf2;
+      --text: #14191f;
+      --muted: #586574;
+      --line: #d6dde5;
+      --accent: #e9b917;
+      --accent-2: #dd6e1f;
+      --accent-ink: #17130a;
+      --good: #16885b;
+      --danger: #c83d3d;
+      --shadow: 0 24px 70px rgba(20, 35, 50, .13);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 78% 8%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 28rem),
+        radial-gradient(circle at 10% 60%, color-mix(in srgb, var(--accent-2) 8%, transparent), transparent 30rem),
+        var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    button, input, select { font: inherit; }
+    button, select { cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--accent) 70%, white);
+      outline-offset: 3px;
+    }
+
+    .shell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 26px 0 54px; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 26px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 13px; min-width: 0; }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      flex: 0 0 auto;
+      border: 2px solid var(--text);
+      border-radius: 14px;
+      background: var(--accent);
+      color: var(--accent-ink);
+      box-shadow: 5px 5px 0 var(--text);
+      font-size: 26px;
+    }
+
+    .brand h1 { margin: 0; font-size: clamp(1.12rem, 2vw, 1.42rem); line-height: 1.1; letter-spacing: -.02em; }
+    .brand p { margin: 4px 0 0; color: var(--muted); font-size: .83rem; letter-spacing: .08em; text-transform: uppercase; }
+
+    .top-actions { display: flex; gap: 9px; }
+    .icon-btn, .small-btn {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--text);
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+    .icon-btn { width: 44px; height: 44px; font-size: 1.05rem; }
+    .small-btn { min-height: 42px; padding: 0 14px; font-weight: 750; }
+    .icon-btn:hover, .small-btn:hover { transform: translateY(-2px); border-color: var(--accent); background: var(--surface-2); }
+
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 24px;
+      margin: 24px 0 20px;
+    }
+
+    .eyebrow { margin: 0 0 9px; color: var(--accent); font-size: .78rem; font-weight: 850; letter-spacing: .16em; text-transform: uppercase; }
+    .intro h2 { max-width: 780px; margin: 0; font-size: clamp(2.2rem, 7vw, 5.4rem); line-height: .91; letter-spacing: -.07em; }
+    .intro h2 span { color: var(--accent); }
+    .intro-copy { max-width: 620px; margin: 18px 0 0; color: var(--muted); font-size: clamp(1rem, 1.6vw, 1.15rem); }
+
+    .standard-stamp {
+      width: 154px;
+      padding: 14px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      color: var(--accent);
+      text-align: center;
+      transform: rotate(5deg);
+      font-size: .76rem;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .standard-stamp strong { display: block; font-size: 1.35rem; letter-spacing: .04em; }
+
+    .ruler {
+      height: 16px;
+      margin: 25px 0;
+      border-top: 2px solid var(--line);
+      background: repeating-linear-gradient(90deg, var(--line) 0 2px, transparent 2px 24px);
+      opacity: .8;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.12fr) minmax(340px, .88fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: color-mix(in srgb, var(--surface) 94%, transparent);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .calculator { padding: clamp(18px, 3vw, 30px); }
+    .section-label { margin: 0 0 11px; color: var(--muted); font-size: .76rem; font-weight: 850; letter-spacing: .13em; text-transform: uppercase; }
+
+    .category-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      padding: 2px 2px 9px;
+      margin-bottom: 18px;
+    }
+    .tab {
+      flex: 0 0 auto;
+      min-height: 42px;
+      padding: 0 15px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 750;
+    }
+    .tab:hover { color: var(--text); border-color: var(--muted); }
+    .tab.active { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+
+    .profile-row {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    .field { min-width: 0; }
+    .profile-field { flex: 1; }
+    label { display: block; margin: 0 0 8px; color: var(--muted); font-size: .86rem; font-weight: 700; }
+    select, input[type="number"] {
+      width: 100%;
+      min-height: 54px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface-2);
+      color: var(--text);
+      padding: 0 15px;
+    }
+    select:hover, input[type="number"]:hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+
+    .convert-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 46px minmax(0, 1fr);
+      gap: 12px;
+      align-items: end;
+    }
+    .measure-box {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--surface-2);
+    }
+    .measure-box input, .measure-box select { border: 0; background: transparent; padding-left: 3px; padding-right: 3px; }
+    .measure-box input { min-height: 62px; font-size: clamp(1.45rem, 4vw, 2.25rem); font-weight: 800; letter-spacing: -.04em; }
+    .measure-box select { min-height: 42px; border-top: 1px solid var(--line); border-radius: 0; color: var(--muted); }
+
+    .swap {
+      width: 46px;
+      height: 46px;
+      margin-bottom: 24px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: var(--surface-3);
+      color: var(--text);
+      font-size: 1.2rem;
+      transition: transform .24s ease, background .18s ease;
+    }
+    .swap:hover { transform: rotate(180deg); background: var(--accent); color: var(--accent-ink); }
+
+    .result-box { position: relative; border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); }
+    .result-box::after { content: "RESULT"; position: absolute; top: 11px; right: 12px; color: var(--accent); font-size: .63rem; font-weight: 900; letter-spacing: .14em; }
+    #result { overflow: hidden; text-overflow: ellipsis; }
+
+    .error { min-height: 24px; margin: 9px 2px 0; color: var(--danger); font-size: .86rem; }
+
+    .result-summary {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+      margin-top: 4px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 11%, var(--surface-2)), var(--surface-2));
+    }
+    .result-summary p { margin: 0; }
+    #sentence { font-size: 1.04rem; font-weight: 750; }
+    #breakdown { margin-top: 4px; color: var(--muted); font-size: .87rem; font-weight: 500; }
+    .copy-btn { border-color: var(--accent); color: var(--accent); background: transparent; }
+
+    .output-panel { display: flex; flex-direction: column; min-height: 100%; }
+    .output-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 22px 24px 14px; }
+    .output-head h3 { margin: 0; font-size: 1.05rem; }
+    .badge { padding: 5px 9px; border: 1px solid var(--line); border-radius: 99px; color: var(--muted); font-size: .72rem; font-weight: 800; }
+
+    .chicken-stage {
+      position: relative;
+      display: grid;
+      place-items: center;
+      flex: 1;
+      min-height: 248px;
+      padding: 30px 24px 40px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background:
+        linear-gradient(90deg, transparent 49.7%, color-mix(in srgb, var(--line) 45%, transparent) 50%, transparent 50.3%),
+        linear-gradient(var(--surface-2), var(--surface));
+    }
+    .chicken-stage::before {
+      content: "";
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      bottom: 31px;
+      height: 2px;
+      background: var(--line);
+    }
+    #chickenViz { position: relative; z-index: 1; display: flex; flex-wrap: wrap-reverse; align-items: end; justify-content: center; gap: 7px; max-width: 410px; }
+    .bird { display: inline-block; font-size: clamp(2rem, 4.8vw, 3.5rem); filter: drop-shadow(0 8px 8px rgba(0,0,0,.18)); transform-origin: bottom; animation: land .38s both; }
+    .bird.partial { overflow: hidden; width: var(--part); white-space: nowrap; opacity: .72; }
+    @keyframes land { from { opacity: 0; transform: translateY(-8px) rotate(-4deg); } to { opacity: 1; transform: translateY(0) rotate(0); } }
+
+    .viz-empty { color: var(--muted); text-align: center; }
+    .viz-empty strong { display: block; color: var(--text); font-size: 2.6rem; }
+    .viz-note { position: absolute; z-index: 2; right: 20px; bottom: 8px; color: var(--muted); font-size: .72rem; }
+
+    .reference-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); }
+    .reference-item { padding: 17px 18px; background: var(--surface); }
+    .reference-item span { display: block; color: var(--muted); font-size: .73rem; letter-spacing: .08em; text-transform: uppercase; }
+    .reference-item strong { display: block; margin-top: 3px; font-size: 1.02rem; }
+
+    .lower-grid { display: grid; grid-template-columns: 1.4fr .6fr; gap: 18px; margin-top: 18px; }
+    .specs, .method { padding: 23px; }
+    .panel-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 17px; }
+    .panel-title h3 { margin: 0; font-size: 1.08rem; }
+    .panel-title span { color: var(--muted); font-size: .79rem; }
+    .spec-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+    .spec { padding: 15px 13px; border: 1px solid var(--line); border-radius: 15px; background: var(--surface-2); }
+    .spec span { display: block; color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; }
+    .spec strong { display: block; margin-top: 5px; font-size: 1.05rem; }
+
+    details { border-top: 1px solid var(--line); }
+    details:first-of-type { border-top: 0; }
+    summary { padding: 14px 0; cursor: pointer; font-weight: 750; }
+    details p { margin: -4px 0 15px; color: var(--muted); font-size: .89rem; }
+    .method a { color: var(--accent); }
+
+    dialog {
+      width: min(680px, calc(100% - 28px));
+      max-height: min(820px, calc(100vh - 28px));
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 40px 100px rgba(0,0,0,.6);
+    }
+    dialog::backdrop { background: rgba(2, 5, 8, .76); backdrop-filter: blur(8px); }
+    .modal-head { position: sticky; top: 0; z-index: 2; display: flex; justify-content: space-between; gap: 20px; align-items: center; padding: 20px 22px; border-bottom: 1px solid var(--line); background: var(--surface); }
+    .modal-head h3 { margin: 0; }
+    .modal-body { padding: 22px; }
+    .modal-copy { margin: 0 0 20px; color: var(--muted); }
+    .custom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .input-suffix { position: relative; }
+    .input-suffix input { padding-right: 52px; }
+    .input-suffix span { position: absolute; right: 15px; top: 42px; color: var(--muted); font-size: .85rem; }
+    .modal-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 22px; }
+    .primary { border: 0; background: var(--accent); color: var(--accent-ink); }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      z-index: 10;
+      transform: translate(-50%, 18px);
+      padding: 11px 16px;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      background: var(--text);
+      color: var(--bg);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease;
+      font-weight: 750;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    .footer { display: flex; justify-content: space-between; gap: 18px; margin-top: 24px; color: var(--muted); font-size: .78rem; }
+    .footer strong { color: var(--text); }
+
+    @media (max-width: 860px) {
+      .workspace, .lower-grid { grid-template-columns: 1fr; }
+      .intro { grid-template-columns: 1fr; }
+      .standard-stamp { display: none; }
+      .spec-grid { grid-template-columns: repeat(3, 1fr); }
+      .chicken-stage { min-height: 220px; }
+    }
+
+    @media (max-width: 600px) {
+      .shell { width: min(100% - 20px, 1180px); padding-top: 14px; }
+      .brand p { display: none; }
+      .intro h2 { font-size: clamp(2.25rem, 15vw, 4rem); }
+      .convert-grid { grid-template-columns: 1fr; }
+      .swap { margin: -3px auto; transform: rotate(90deg); }
+      .swap:hover { transform: rotate(270deg); }
+      .reference-grid { grid-template-columns: 1fr; }
+      .spec-grid { grid-template-columns: repeat(2, 1fr); }
+      .custom-grid { grid-template-columns: 1fr; }
+      .profile-row { align-items: stretch; flex-direction: column; }
+      .footer { flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">🐔</div>
+        <div>
+          <h1>Chicken Calculator</h1>
+          <p>CHKN Standard Laboratory</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="themeBtn" aria-label="Switch color theme" title="Switch color theme">☀︎</button>
+        <button class="small-btn" id="customizeBtn">Tune chicken</button>
+      </div>
+    </header>
+
+    <section class="intro" aria-labelledby="main-title">
+      <div>
+        <p class="eyebrow">Finally, a measurement system with feathers</p>
+        <h2 id="main-title">Measure anything in <span>chickens.</span></h2>
+        <p class="intro-copy">Convert height, length, wingspan, weight, and liquid volume using one consistent reference bird—or calibrate your own.</p>
+      </div>
+      <div class="standard-stamp" aria-label="Certified approximately accurate">Certified<strong>CHKN-1</strong>Approximately accurate</div>
+    </section>
+
+    <div class="ruler" aria-hidden="true"></div>
+
+    <section class="workspace" aria-label="Chicken conversion calculator">
+      <div class="panel calculator">
+        <p class="section-label">01 · Choose what you are measuring</p>
+        <div class="category-tabs" id="categoryTabs" role="tablist" aria-label="Measurement type"></div>
+
+        <div class="profile-row">
+          <div class="field profile-field">
+            <label for="profile">Reference bird</label>
+            <select id="profile" aria-describedby="profileHint"></select>
+          </div>
+          <button class="small-btn" id="resetBtn" title="Reset this calculator">Reset</button>
+        </div>
+
+        <p class="section-label">02 · Enter a measurement</p>
+        <div class="convert-grid">
+          <div class="measure-box">
+            <label for="amount">From</label>
+            <input id="amount" type="number" inputmode="decimal" value="1" step="any" aria-label="Amount to convert">
+            <select id="fromUnit" aria-label="Starting unit"></select>
+          </div>
+          <button class="swap" id="swapBtn" aria-label="Swap units" title="Swap units">⇄</button>
+          <div class="measure-box result-box">
+            <label for="result">To</label>
+            <input id="result" type="text" value="" readonly aria-live="polite" aria-label="Conversion result">
+            <select id="toUnit" aria-label="Result unit"></select>
+          </div>
+        </div>
+        <div class="error" id="error" role="alert"></div>
+
+        <div class="result-summary" aria-live="polite">
+          <div>
+            <p id="sentence"></p>
+            <p id="breakdown"></p>
+          </div>
+          <button class="small-btn copy-btn" id="copyBtn">Copy</button>
+        </div>
+      </div>
+
+      <aside class="panel output-panel" aria-label="Chicken visualization and reference values">
+        <div class="output-head">
+          <h3>Chicken-o-meter</h3>
+          <span class="badge" id="activeBadge">STANDARD CHICKEN</span>
+        </div>
+        <div class="chicken-stage">
+          <div id="chickenViz" aria-hidden="true"></div>
+          <span class="viz-note" id="vizNote"></span>
+        </div>
+        <div class="reference-grid">
+          <div class="reference-item"><span>One chicken</span><strong id="oneChicken"></strong></div>
+          <div class="reference-item"><span>Your amount</span><strong id="chickenCount"></strong></div>
+          <div class="reference-item"><span>Confidence</span><strong>Feather-grade</strong></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="lower-grid">
+      <div class="panel specs">
+        <div class="panel-title">
+          <h3 id="specTitle">Standard Chicken specifications</h3>
+          <span id="profileHint">Nominal reference values</span>
+        </div>
+        <div class="spec-grid">
+          <div class="spec"><span>Height</span><strong id="specHeight"></strong></div>
+          <div class="spec"><span>Body length</span><strong id="specLength"></strong></div>
+          <div class="spec"><span>Wingspan</span><strong id="specWingspan"></strong></div>
+          <div class="spec"><span>Weight</span><strong id="specMass"></strong></div>
+          <div class="spec"><span>Displacement</span><strong id="specVolume"></strong></div>
+        </div>
+      </div>
+
+      <div class="panel method">
+        <div class="panel-title"><h3>How the chicken works</h3></div>
+        <details open>
+          <summary>Is one chicken exact?</summary>
+          <p>No. Chickens vary dramatically by breed, sex, and age. CHKN-1 is a practical house standard: 45 cm tall, 45 cm long, 75 cm across, and 2.5 kg.</p>
+        </details>
+        <details>
+          <summary>How can a chicken equal liquid?</summary>
+          <p>It cannot “hold” liquid. The calculator estimates whole-body displacement. For a fun working unit, it uses roughly 1 liter per kilogram, so a 2.5 kg chicken displaces about 2.5 L.</p>
+        </details>
+        <details>
+          <summary>Can I use my own chicken?</summary>
+          <p>Yes. Select <strong>Custom chicken</strong> or press <strong>Tune chicken</strong>, then enter your bird’s measurements. Custom values stay on this device.</p>
+        </details>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span><strong>Important:</strong> An unofficial novelty unit. Do not use for engineering, medicine, shipping, or coop welfare decisions.</span>
+      <span>1 CHKN = 1 selected reference bird</span>
+    </footer>
+  </main>
+
+  <dialog id="customDialog" aria-labelledby="customTitle">
+    <div class="modal-head">
+      <h3 id="customTitle">Tune your chicken</h3>
+      <button class="icon-btn" id="closeDialog" aria-label="Close">×</button>
+    </div>
+    <form class="modal-body" id="customForm" method="dialog">
+      <p class="modal-copy">Make the unit yours. All fields must be positive; volume is the bird’s estimated water displacement.</p>
+      <div class="custom-grid">
+        <div class="field input-suffix"><label for="customHeight">Standing height</label><input id="customHeight" type="number" min="0.1" step="0.1" required><span>cm</span></div>
+        <div class="field input-suffix"><label for="customLength">Body length</label><input id="customLength" type="number" min="0.1" step="0.1" required><span>cm</span></div>
+        <div class="field input-suffix"><label for="customWingspan">Wingspan</label><input id="customWingspan" type="number" min="0.1" step="0.1" required><span>cm</span></div>
+        <div class="field input-suffix"><label for="customMass">Weight</label><input id="customMass" type="number" min="0.01" step="0.01" required><span>kg</span></div>
+        <div class="field input-suffix"><label for="customVolume">Displacement</label><input id="customVolume" type="number" min="0.01" step="0.01" required><span>L</span></div>
+      </div>
+      <div class="modal-actions">
+        <button class="small-btn" type="button" id="restoreCustom">Restore defaults</button>
+        <button class="small-btn primary" type="submit">Save custom chicken</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">Copied to clipboard</div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const DEFAULT_CUSTOM = { name: 'Custom chicken', height: 45, length: 45, wingspan: 75, mass: 2.5, volume: 2.5 };
+      const profiles = {
+        standard: { name: 'Standard Chicken (CHKN-1)', short: 'Standard', height: 45, length: 45, wingspan: 75, mass: 2.5, volume: 2.5 },
+        hen:      { name: 'Average Hen', short: 'Hen', height: 42, length: 43, wingspan: 70, mass: 2.2, volume: 2.2 },
+        rooster:  { name: 'Average Rooster', short: 'Rooster', height: 55, length: 50, wingspan: 85, mass: 3.4, volume: 3.4 },
+        bantam:   { name: 'Bantam Chicken', short: 'Bantam', height: 30, length: 30, wingspan: 46, mass: 0.75, volume: 0.75 },
+        custom:   loadCustom()
+      };
+
+      const categories = {
+        height: {
+          label: '↕ Height', noun: 'chicken heights', profileKey: 'height', base: 'cm',
+          units: {
+            chicken: ['chicken heights', p => p.height],
+            mm: ['millimeters', 0.1], cm: ['centimeters', 1], m: ['meters', 100],
+            in: ['inches', 2.54], ft: ['feet', 30.48], yd: ['yards', 91.44]
+          }, defaults: ['ft', 'chicken']
+        },
+        length: {
+          label: '↔ Length', noun: 'chicken lengths', profileKey: 'length', base: 'cm',
+          units: {
+            chicken: ['chicken lengths', p => p.length],
+            mm: ['millimeters', 0.1], cm: ['centimeters', 1], m: ['meters', 100], km: ['kilometers', 100000],
+            in: ['inches', 2.54], ft: ['feet', 30.48], yd: ['yards', 91.44], mi: ['miles', 160934.4]
+          }, defaults: ['m', 'chicken']
+        },
+        wingspan: {
+          label: '⟷ Wingspan', noun: 'chicken wingspans', profileKey: 'wingspan', base: 'cm',
+          units: {
+            chicken: ['chicken wingspans', p => p.wingspan],
+            mm: ['millimeters', 0.1], cm: ['centimeters', 1], m: ['meters', 100],
+            in: ['inches', 2.54], ft: ['feet', 30.48], yd: ['yards', 91.44]
+          }, defaults: ['ft', 'chicken']
+        },
+        weight: {
+          label: '⚖ Weight', noun: 'chicken-masses', profileKey: 'mass', base: 'kg',
+          units: {
+            chicken: ['chicken-masses', p => p.mass],
+            mg: ['milligrams', 0.000001], g: ['grams', 0.001], kg: ['kilograms', 1],
+            oz: ['ounces', 0.028349523125], lb: ['pounds', 0.45359237], ton: ['US tons', 907.18474]
+          }, defaults: ['lb', 'chicken']
+        },
+        volume: {
+          label: '◒ Liquid', noun: 'chicken-volumes', profileKey: 'volume', base: 'L',
+          units: {
+            chicken: ['chicken-volumes', p => p.volume],
+            ml: ['milliliters', 0.001], l: ['liters', 1], tsp: ['US teaspoons', 0.00492892159375],
+            tbsp: ['US tablespoons', 0.01478676478125], cup: ['US cups', 0.2365882365],
+            pt: ['US pints', 0.473176473], qt: ['US quarts', 0.946352946], gal: ['US gallons', 3.785411784]
+          }, defaults: ['gal', 'chicken']
+        }
+      };
+
+      const $ = id => document.getElementById(id);
+      const els = {
+        tabs: $('categoryTabs'), profile: $('profile'), amount: $('amount'), result: $('result'),
+        from: $('fromUnit'), to: $('toUnit'), error: $('error'), sentence: $('sentence'), breakdown: $('breakdown'),
+        viz: $('chickenViz'), vizNote: $('vizNote'), one: $('oneChicken'), count: $('chickenCount'), badge: $('activeBadge'),
+        specTitle: $('specTitle'), specHeight: $('specHeight'), specLength: $('specLength'), specWingspan: $('specWingspan'),
+        specMass: $('specMass'), specVolume: $('specVolume'), dialog: $('customDialog'), toast: $('toast')
+      };
+
+      let currentCategory = localStorage.getItem('chkn-category') || 'height';
+      let currentProfile = localStorage.getItem('chkn-profile') || 'standard';
+      let lastCopyText = '';
+
+      if (!categories[currentCategory]) currentCategory = 'height';
+      if (!profiles[currentProfile]) currentProfile = 'standard';
+
+      function loadCustom() {
+        try {
+          const stored = JSON.parse(localStorage.getItem('chkn-custom'));
+          if (stored && ['height','length','wingspan','mass','volume'].every(k => Number(stored[k]) > 0)) {
+            return { ...DEFAULT_CUSTOM, ...stored };
+          }
+        } catch (_) {}
+        return { ...DEFAULT_CUSTOM };
+      }
+
+      function profile() { return profiles[currentProfile]; }
+      function category() { return categories[currentCategory]; }
+      function factor(unitKey) {
+        const raw = category().units[unitKey][1];
+        return typeof raw === 'function' ? raw(profile()) : raw;
+      }
+
+      function formatNumber(value, max = 4) {
+        const abs = Math.abs(value);
+        if (!Number.isFinite(value)) return '—';
+        if (abs !== 0 && (abs >= 1e9 || abs < 0.0001)) return value.toExponential(3);
+        return new Intl.NumberFormat(undefined, { maximumFractionDigits: max, minimumFractionDigits: 0 }).format(value);
+      }
+
+      function unitLabel(key) { return category().units[key][0]; }
+
+      function initTabs() {
+        els.tabs.innerHTML = '';
+        Object.entries(categories).forEach(([key, cat]) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'tab' + (key === currentCategory ? ' active' : '');
+          button.textContent = cat.label;
+          button.dataset.category = key;
+          button.setAttribute('role', 'tab');
+          button.setAttribute('aria-selected', String(key === currentCategory));
+          button.addEventListener('click', () => setCategory(key));
+          els.tabs.appendChild(button);
+        });
+      }
+
+      function initProfiles() {
+        els.profile.innerHTML = '';
+        Object.entries(profiles).forEach(([key, item]) => {
+          const option = document.createElement('option');
+          option.value = key;
+          option.textContent = item.name;
+          option.selected = key === currentProfile;
+          els.profile.appendChild(option);
+        });
+      }
+
+      function populateUnits(useDefaults = true) {
+        const cat = category();
+        const priorFrom = els.from.value;
+        const priorTo = els.to.value;
+        [els.from, els.to].forEach(select => select.innerHTML = '');
+        Object.entries(cat.units).forEach(([key, [label]]) => {
+          [els.from, els.to].forEach(select => {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = key === 'chicken' ? label + ' (CHKN)' : label;
+            select.appendChild(option);
+          });
+        });
+        els.from.value = !useDefaults && cat.units[priorFrom] ? priorFrom : cat.defaults[0];
+        els.to.value = !useDefaults && cat.units[priorTo] ? priorTo : cat.defaults[1];
+      }
+
+      function setCategory(key) {
+        currentCategory = key;
+        localStorage.setItem('chkn-category', key);
+        initTabs();
+        populateUnits(true);
+        calculate();
+      }
+
+      function nearestFraction(value) {
+        const whole = Math.floor(Math.abs(value));
+        const fraction = Math.abs(value) - whole;
+        const eighths = Math.round(fraction * 8);
+        const labels = ['', '⅛', '¼', '⅜', '½', '⅝', '¾', '⅞', ''];
+        let w = whole;
+        let f = labels[eighths];
+        if (eighths === 8) { w += 1; f = ''; }
+        const sign = value < 0 ? '−' : '';
+        return sign + (w ? w : '') + (w && f ? ' ' : '') + (f || (!w ? '0' : ''));
+      }
+
+      function calculate() {
+        const value = Number(els.amount.value);
+        const from = els.from.value;
+        const to = els.to.value;
+        updateSpecs();
+
+        if (els.amount.value.trim() === '' || !Number.isFinite(value)) {
+          els.result.value = '';
+          els.error.textContent = 'Enter a valid number to hatch a result.';
+          els.sentence.textContent = 'Waiting for a measurement…';
+          els.breakdown.textContent = '';
+          renderBirds(0);
+          return;
+        }
+
+        els.error.textContent = '';
+        const baseValue = value * factor(from);
+        const answer = baseValue / factor(to);
+        const chickens = baseValue / factor('chicken');
+        els.result.value = formatNumber(answer, 6);
+
+        const fromText = `${formatNumber(value, 6)} ${unitLabel(from)}`;
+        const toText = `${formatNumber(answer, 6)} ${unitLabel(to)}`;
+        els.sentence.textContent = `${fromText} = ${toText}`;
+        els.breakdown.textContent = `${formatNumber(chickens, 4)} ${category().noun} · about ${nearestFraction(chickens)} to the nearest ⅛ chicken`;
+        lastCopyText = `${fromText} = ${toText} (${formatNumber(chickens, 4)} ${category().noun}, ${profile().name})`;
+
+        els.one.textContent = oneChickenText();
+        els.count.textContent = `${formatNumber(chickens, 3)} CHKN`;
+        renderBirds(chickens);
+      }
+
+      function oneChickenText() {
+        const p = profile();
+        const value = p[category().profileKey];
+        if (currentCategory === 'weight') return `${formatNumber(value)} kg`;
+        if (currentCategory === 'volume') return `${formatNumber(value)} L`;
+        return `${formatNumber(value)} cm`;
+      }
+
+      function renderBirds(count) {
+        els.viz.innerHTML = '';
+        els.vizNote.textContent = '';
+        const abs = Math.abs(count);
+        if (!Number.isFinite(abs) || abs === 0) {
+          els.viz.innerHTML = '<div class="viz-empty"><strong>0</strong>no chickens detected</div>';
+          return;
+        }
+
+        let displayCount = abs;
+        let scale = 1;
+        if (abs > 18) {
+          scale = Math.pow(10, Math.floor(Math.log10(abs / 12)));
+          displayCount = abs / scale;
+          els.vizNote.textContent = `Each chicken shown ≈ ${formatNumber(scale)} CHKN`;
+        }
+        const whole = Math.min(18, Math.floor(displayCount));
+        const partial = Math.min(1, displayCount - whole);
+        for (let i = 0; i < whole; i++) {
+          const bird = document.createElement('span');
+          bird.className = 'bird';
+          bird.textContent = '🐔';
+          bird.style.animationDelay = `${Math.min(i * 25, 250)}ms`;
+          els.viz.appendChild(bird);
+        }
+        if (partial >= .08 && whole < 18) {
+          const bird = document.createElement('span');
+          bird.className = 'bird partial';
+          bird.textContent = '🐔';
+          bird.style.setProperty('--part', `${Math.max(12, partial * 58)}px`);
+          els.viz.appendChild(bird);
+        }
+        if (whole === 0 && partial < .08) {
+          els.viz.innerHTML = `<div class="viz-empty"><strong>${formatNumber(abs, 5)}</strong>tiny chicken fraction</div>`;
+        }
+      }
+
+      function updateSpecs() {
+        const p = profile();
+        els.badge.textContent = p.short.toUpperCase() + ' CHICKEN';
+        els.specTitle.textContent = `${p.name} specifications`;
+        els.specHeight.textContent = `${formatNumber(p.height)} cm`;
+        els.specLength.textContent = `${formatNumber(p.length)} cm`;
+        els.specWingspan.textContent = `${formatNumber(p.wingspan)} cm`;
+        els.specMass.textContent = `${formatNumber(p.mass)} kg`;
+        els.specVolume.textContent = `${formatNumber(p.volume)} L`;
+      }
+
+      function openCustom() {
+        const c = profiles.custom;
+        $('customHeight').value = c.height;
+        $('customLength').value = c.length;
+        $('customWingspan').value = c.wingspan;
+        $('customMass').value = c.mass;
+        $('customVolume').value = c.volume;
+        if (!els.dialog.open) els.dialog.showModal();
+      }
+
+      function saveCustom() {
+        const candidate = {
+          ...DEFAULT_CUSTOM,
+          height: Number($('customHeight').value), length: Number($('customLength').value),
+          wingspan: Number($('customWingspan').value), mass: Number($('customMass').value), volume: Number($('customVolume').value)
+        };
+        if (!['height','length','wingspan','mass','volume'].every(k => candidate[k] > 0 && Number.isFinite(candidate[k]))) return;
+        profiles.custom = candidate;
+        localStorage.setItem('chkn-custom', JSON.stringify(candidate));
+        currentProfile = 'custom';
+        localStorage.setItem('chkn-profile', 'custom');
+        initProfiles();
+        calculate();
+        showToast('Custom chicken saved');
+      }
+
+      function showToast(message) {
+        els.toast.textContent = message;
+        els.toast.classList.add('show');
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => els.toast.classList.remove('show'), 1800);
+      }
+
+      function reset() {
+        currentCategory = 'height';
+        currentProfile = 'standard';
+        els.amount.value = 1;
+        localStorage.setItem('chkn-category', currentCategory);
+        localStorage.setItem('chkn-profile', currentProfile);
+        initTabs(); initProfiles(); populateUnits(true); calculate();
+        showToast('Calculator reset');
+      }
+
+      function setTheme(theme) {
+        document.documentElement.dataset.theme = theme;
+        localStorage.setItem('chkn-theme', theme);
+        $('themeBtn').textContent = theme === 'dark' ? '☀︎' : '☾';
+        $('themeBtn').setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`);
+      }
+
+      els.amount.addEventListener('input', calculate);
+      els.from.addEventListener('change', calculate);
+      els.to.addEventListener('change', calculate);
+      els.profile.addEventListener('change', e => {
+        currentProfile = e.target.value;
+        localStorage.setItem('chkn-profile', currentProfile);
+        calculate();
+        if (currentProfile === 'custom') openCustom();
+      });
+      $('swapBtn').addEventListener('click', () => {
+        [els.from.value, els.to.value] = [els.to.value, els.from.value];
+        calculate();
+      });
+      $('resetBtn').addEventListener('click', reset);
+      $('customizeBtn').addEventListener('click', openCustom);
+      $('closeDialog').addEventListener('click', () => els.dialog.close());
+      $('customForm').addEventListener('submit', saveCustom);
+      $('restoreCustom').addEventListener('click', () => {
+        profiles.custom = { ...DEFAULT_CUSTOM };
+        localStorage.removeItem('chkn-custom');
+        openCustom();
+        showToast('Custom values restored');
+      });
+      $('copyBtn').addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(lastCopyText);
+          showToast('Conversion copied');
+        } catch (_) {
+          const temp = document.createElement('textarea');
+          temp.value = lastCopyText; document.body.appendChild(temp); temp.select(); document.execCommand('copy'); temp.remove();
+          showToast('Conversion copied');
+        }
+      });
+      $('themeBtn').addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
+      els.dialog.addEventListener('click', e => {
+        const rect = els.dialog.getBoundingClientRect();
+        const outside = e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom;
+        if (outside) els.dialog.close();
+      });
+
+      const preferredTheme = localStorage.getItem('chkn-theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      setTheme(preferredTheme);
+      initTabs(); initProfiles(); populateUnits(true); calculate();
+    })();
+  </script>
+</body>
+</html>
